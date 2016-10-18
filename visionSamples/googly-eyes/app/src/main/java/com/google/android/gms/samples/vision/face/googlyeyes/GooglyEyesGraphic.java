@@ -15,6 +15,7 @@
  */
 package com.google.android.gms.samples.vision.face.googlyeyes;
 
+import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -33,6 +34,8 @@ class GooglyEyesGraphic extends GraphicOverlay.Graphic {
     private Paint mEyeIrisPaint;
     private Paint mEyeOutlinePaint;
     private Paint mEyeLidPaint;
+    private Paint mSmilePaintBlack;
+    private Paint mSmilePaintWhite;
 
     // Keep independent physics state for each eye.
     private EyePhysics mLeftPhysics = new EyePhysics();
@@ -43,12 +46,14 @@ class GooglyEyesGraphic extends GraphicOverlay.Graphic {
 
     private volatile PointF mRightPosition;
     private volatile boolean mRightOpen;
+    private float mIsSmiling;
+    private PointF mBottomMouth;
 
     //==============================================================================================
     // Methods
     //==============================================================================================
 
-    GooglyEyesGraphic(GraphicOverlay overlay) {
+    GooglyEyesGraphic(GraphicOverlay overlay,Context context) {
         super(overlay);
 
         mEyeWhitesPaint = new Paint();
@@ -67,6 +72,23 @@ class GooglyEyesGraphic extends GraphicOverlay.Graphic {
         mEyeOutlinePaint.setColor(Color.BLACK);
         mEyeOutlinePaint.setStyle(Paint.Style.STROKE);
         mEyeOutlinePaint.setStrokeWidth(5);
+
+        float mScaleFactor = context.getResources().getDisplayMetrics().density * 0.6f;
+
+        mSmilePaintBlack = new Paint();
+        mSmilePaintBlack.setColor(Color.BLACK);
+        mSmilePaintBlack.setStyle(Paint.Style.STROKE);
+        mSmilePaintBlack.setStrokeWidth(20);
+        mSmilePaintBlack.setTextAlign(Paint.Align.CENTER);
+        mSmilePaintBlack.setTextSize(50 * mScaleFactor);
+
+        mSmilePaintWhite = new Paint();
+        mSmilePaintWhite.setColor(Color.WHITE);
+        mSmilePaintWhite.setStyle(Paint.Style.STROKE);
+        mSmilePaintWhite.setStrokeWidth(20);
+        mSmilePaintWhite.setTextAlign(Paint.Align.CENTER);
+        mSmilePaintWhite.setTextSize(50 * mScaleFactor);
+
     }
 
     /**
@@ -82,6 +104,11 @@ class GooglyEyesGraphic extends GraphicOverlay.Graphic {
         mRightOpen = rightOpen;
 
         postInvalidate();
+    }
+
+    public void updateMouth(PointF bottomMouth, float isSmilingProbability) {
+        mBottomMouth = bottomMouth;
+        mIsSmiling = isSmilingProbability;
     }
 
     /**
@@ -118,6 +145,23 @@ class GooglyEyesGraphic extends GraphicOverlay.Graphic {
         PointF rightIrisPosition =
                 mRightPhysics.nextIrisPosition(rightPosition, eyeRadius, irisRadius);
         drawEye(canvas, rightPosition, eyeRadius, rightIrisPosition, irisRadius, mRightOpen);
+
+        drawSmile(canvas);
+    }
+
+    private void drawSmile(Canvas canvas) {
+
+
+        if ( mIsSmiling < 0.5 ) {
+            int shadow = 20;
+            PointF position =
+                    new PointF(translateX(mBottomMouth.x), translateY(mBottomMouth.y));
+
+            canvas.drawText("Smile ", position.x + shadow, position.y + shadow, mSmilePaintBlack);
+            canvas.drawText("Smile ", position.x, position.y, mSmilePaintWhite);
+
+//            canvas.drawCircle(position.x, position.y, 100, mSmilePaintWhite);
+        }
     }
 
     /**

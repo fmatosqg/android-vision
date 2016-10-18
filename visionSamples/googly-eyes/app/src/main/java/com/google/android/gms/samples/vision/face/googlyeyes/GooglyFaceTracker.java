@@ -15,6 +15,7 @@
  */
 package com.google.android.gms.samples.vision.face.googlyeyes;
 
+import android.content.Context;
 import android.graphics.PointF;
 
 import com.google.android.gms.samples.vision.face.googlyeyes.ui.camera.GraphicOverlay;
@@ -38,6 +39,7 @@ import java.util.Map;
  */
 class GooglyFaceTracker extends Tracker<Face> {
     private static final float EYE_CLOSED_THRESHOLD = 0.4f;
+    private final Context context;
 
     private GraphicOverlay mOverlay;
     private GooglyEyesGraphic mEyesGraphic;
@@ -57,8 +59,9 @@ class GooglyFaceTracker extends Tracker<Face> {
     // Methods
     //==============================================================================================
 
-    GooglyFaceTracker(GraphicOverlay overlay) {
+    GooglyFaceTracker(GraphicOverlay overlay, Context context) {
         mOverlay = overlay;
+        this.context = context;
     }
 
     /**
@@ -66,7 +69,7 @@ class GooglyFaceTracker extends Tracker<Face> {
      */
     @Override
     public void onNewItem(int id, Face face) {
-        mEyesGraphic = new GooglyEyesGraphic(mOverlay);
+        mEyesGraphic = new GooglyEyesGraphic(mOverlay,context);
     }
 
     /**
@@ -82,6 +85,7 @@ class GooglyFaceTracker extends Tracker<Face> {
 
         PointF leftPosition = getLandmarkPosition(face, Landmark.LEFT_EYE);
         PointF rightPosition = getLandmarkPosition(face, Landmark.RIGHT_EYE);
+        PointF bottomMouth = getLandmarkPosition(face,Landmark.BOTTOM_MOUTH);
 
         float leftOpenScore = face.getIsLeftEyeOpenProbability();
         boolean isLeftOpen;
@@ -102,6 +106,7 @@ class GooglyFaceTracker extends Tracker<Face> {
         }
 
         mEyesGraphic.updateEyes(leftPosition, isLeftOpen, rightPosition, isRightOpen);
+        mEyesGraphic.updateMouth(bottomMouth,face.getIsSmilingProbability());
     }
 
     /**

@@ -298,7 +298,7 @@ public final class GooglyEyesActivity extends AppCompatActivity {
             // speed up detection, in that it can quit after finding a single face and can assume
             // that the nextIrisPosition face position is usually relatively close to the last seen
             // face position.
-            Tracker<Face> tracker = new GooglyFaceTracker(mGraphicOverlay);
+            Tracker<Face> tracker = new GooglyFaceTracker(mGraphicOverlay,this);
             processor = new LargestFaceFocusingProcessor.Builder(detector, tracker).build();
         } else {
             // For rear facing mode, a factory is used to create per-face tracker instances.  A
@@ -315,7 +315,7 @@ public final class GooglyEyesActivity extends AppCompatActivity {
             MultiProcessor.Factory<Face> factory = new MultiProcessor.Factory<Face>() {
                 @Override
                 public Tracker<Face> create(Face face) {
-                    return new GooglyFaceTracker(mGraphicOverlay);
+                    return new GooglyFaceTracker(mGraphicOverlay,GooglyEyesActivity.this);
                 }
             };
             processor = new MultiProcessor.Builder<>(factory).build();
