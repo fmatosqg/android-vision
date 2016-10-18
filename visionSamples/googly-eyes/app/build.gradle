@@ -1,9 +1,12 @@
 apply plugin: 'android-sdk-manager'
 apply plugin: 'com.android.application'
 
+apply from: "slack.properties"
+
 android {
     compileSdkVersion 24
     buildToolsVersion "24.0.2"
+    useLibrary 'org.apache.http.legacy'
 
     defaultConfig {
         applicationId "com.google.android.gms.samples.vision.face.googlyeyes"
@@ -13,9 +16,15 @@ android {
         versionName "1.0"
     }
     buildTypes {
+
+        debug {
+            buildConfigField("String","SLACK_WEB_HOOK", '"' + SLACK_WEB_HOOK + '"')
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+            buildConfigField("String","SLACK_WEB_HOOK", '"' + SLACK_WEB_HOOK + '"')
         }
     }
 }
@@ -25,4 +34,11 @@ dependencies {
 	compile 'com.android.support:support-v4:24.2.0'
 	compile 'com.android.support:design:24.2.0'
 	compile 'com.google.android.gms:play-services-vision:9.4.0+'
+    compile 'com.android.volley:volley:1.0.0'
+    compile "commons-io:commons-io:+"
+}
+
+def buildConfigFieldString(String key,String value){
+//            buildConfigField("String", "GOOGLE_VERIFICATION_API_KEY", "\"aaa\"")
+//    addBuildConfigField(com.android.builder.core.AndroidBuilder.createClassField("String", key, value));
 }

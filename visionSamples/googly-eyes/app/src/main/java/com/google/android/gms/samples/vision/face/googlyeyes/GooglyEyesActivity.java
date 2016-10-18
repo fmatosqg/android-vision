@@ -36,6 +36,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.samples.vision.face.googlyeyes.network.PostService;
 import com.google.android.gms.vision.CameraSource;
 import com.google.android.gms.vision.Detector;
 import com.google.android.gms.vision.MultiProcessor;
@@ -96,8 +97,11 @@ public final class GooglyEyesActivity extends AppCompatActivity {
         mPreview = (CameraSourcePreview) findViewById(R.id.preview);
         mGraphicOverlay = (GraphicOverlay) findViewById(R.id.faceOverlay);
 
-        final Button button = (Button) findViewById(R.id.flipButton);
-        button.setOnClickListener(mFlipButtonListener);
+        final Button flipButton = (Button) findViewById(R.id.flipButton);
+        flipButton.setOnClickListener(mFlipButtonListener);
+
+        final Button postButton = (Button) findViewById(R.id.postButton);
+        postButton.setOnClickListener(mPostButtonListener);
 
         if (savedInstanceState != null) {
             mIsFrontFacing = savedInstanceState.getBoolean("IsFrontFacing");
@@ -249,6 +253,14 @@ public final class GooglyEyesActivity extends AppCompatActivity {
 
             createCameraSource();
             startCameraSource();
+        }
+    };
+
+    private View.OnClickListener mPostButtonListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            PostService service = new PostService();
+            service.postPhoto();
         }
     };
 
