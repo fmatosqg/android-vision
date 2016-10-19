@@ -21,6 +21,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
 
+import com.google.android.gms.samples.vision.face.googlyeyes.disk.FileSaver;
 import com.google.android.gms.samples.vision.face.googlyeyes.ui.camera.GraphicOverlay;
 
 /**
@@ -49,6 +50,7 @@ class GooglyEyesGraphic extends GraphicOverlay.Graphic {
     private float mIsSmiling;
     private PointF mBottomMouth;
 
+    private final FileSaver fileSaver;
     //==============================================================================================
     // Methods
     //==============================================================================================
@@ -89,6 +91,7 @@ class GooglyEyesGraphic extends GraphicOverlay.Graphic {
         mSmilePaintWhite.setTextAlign(Paint.Align.CENTER);
         mSmilePaintWhite.setTextSize(50 * mScaleFactor);
 
+        fileSaver = new FileSaver(context);
     }
 
     /**
@@ -147,10 +150,12 @@ class GooglyEyesGraphic extends GraphicOverlay.Graphic {
         drawEye(canvas, rightPosition, eyeRadius, rightIrisPosition, irisRadius, mRightOpen);
 
         drawSmile(canvas);
+
+        fileSaver.saveImage(canvas,"b.jpg");
+
     }
 
     private void drawSmile(Canvas canvas) {
-
 
         if ( mIsSmiling < 0.5 ) {
             int shadow = 20;
