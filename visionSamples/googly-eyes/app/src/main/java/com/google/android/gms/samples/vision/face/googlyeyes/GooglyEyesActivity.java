@@ -24,7 +24,13 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.media.ExifInterface;
 import android.os.Bundle;
+import android.os.Handler;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -36,7 +42,10 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.samples.vision.face.googlyeyes.disk.FileSaver;
 import com.google.android.gms.samples.vision.face.googlyeyes.network.PostService;
+import com.google.android.gms.samples.vision.face.googlyeyes.otto.OttoBus;
+import com.google.android.gms.samples.vision.face.googlyeyes.otto.SmileEvent;
 import com.google.android.gms.vision.CameraSource;
 import com.google.android.gms.vision.Detector;
 import com.google.android.gms.vision.MultiProcessor;
@@ -46,8 +55,11 @@ import com.google.android.gms.vision.face.FaceDetector;
 import com.google.android.gms.samples.vision.face.googlyeyes.ui.camera.CameraSourcePreview;
 import com.google.android.gms.samples.vision.face.googlyeyes.ui.camera.GraphicOverlay;
 import com.google.android.gms.vision.face.LargestFaceFocusingProcessor;
+import com.squareup.otto.Subscribe;
 
+import java.io.File;
 import java.io.IOException;
+
 
 /**
  * Activity for Googly Eyes, an app that uses the camera to track faces and superimpose Googly Eyes
@@ -91,7 +103,10 @@ public final class GooglyEyesActivity extends AppCompatActivity {
      */
     @Override
     public void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
+
+        OttoBus.register(this);
         setContentView(R.layout.main);
 
         mPreview = (CameraSourcePreview) findViewById(R.id.preview);
@@ -173,7 +188,9 @@ public final class GooglyEyesActivity extends AppCompatActivity {
      */
     @Override
     protected void onDestroy() {
+
         super.onDestroy();
+        OttoBus.unregister(this);
         if (mCameraSource != null) {
             mCameraSource.release();
         }
@@ -390,6 +407,9 @@ public final class GooglyEyesActivity extends AppCompatActivity {
                 .setRequestedFps(60.0f)
                 .setAutoFocusEnabled(true)
                 .build();
+
+
+
     }
 
     /**
@@ -410,11 +430,58 @@ public final class GooglyEyesActivity extends AppCompatActivity {
         if (mCameraSource != null) {
             try {
                 mPreview.start(mCameraSource, mGraphicOverlay);
+//                takePicture();
             } catch (IOException e) {
                 Log.e(TAG, "Unable to start camera source.", e);
                 mCameraSource.release();
                 mCameraSource = null;
             }
+        }
+    }
+
+    public void takePicture() {
+
+                mCameraSource.takePicture(new CameraSource.ShutterCallback() {
+                    @Override
+                    public void onShutter() {
+                        Log.i(TAG, "***Shutter callback");
+                    }
+                }, new CameraSource.PictureCallback() {
+                    @Override
+                    public void onPictureTaken(byte[] bytes) {
+                        Log.i(TAG, "***pickure taken");
+                        saveImage(bytes);
+                    }
+                });
+    }
+
+    private void saveImage(byte[] bytes) {
+
+        Bitmap picture = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+        FileSaver fileSaver = new FileSaver(getBaseContext());
+        fileSaver.saveImage(picture,"d.jpg");
+    }
+
+    static class ImageTools {
+        public static Bitmap toBitmap(byte[] data) {
+            return BitmapFactory.decodeByteArray(data, 0, data.length);
+        }
+
+        public static Bitmap rotate(Bitmap in, int angle) {
+            Matrix mat = new Matrix();
+            mat.postRotate(angle);
+            return Bitmap.createBitmap(in, 0, 0, in.getWidth(), in.getHeight(), mat, true);
+        }
+    }
+
+    @Subscribe
+    public void onSmileEvent(SmileEvent e) {
+        Log.i(TAG,"Smile detected");
+
+        try {
+            takePicture();
+        } catch (RuntimeException exception) {
+            Log.i(TAG,"AAAAArgh " + exception.toString());
         }
     }
 }

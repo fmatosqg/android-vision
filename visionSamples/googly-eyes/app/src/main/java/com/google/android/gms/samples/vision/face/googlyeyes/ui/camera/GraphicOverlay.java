@@ -16,19 +16,13 @@
 package com.google.android.gms.samples.vision.face.googlyeyes.ui.camera;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.os.Environment;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 
 import com.google.android.gms.samples.vision.face.googlyeyes.disk.FileSaver;
 import com.google.android.gms.vision.CameraSource;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -189,10 +183,8 @@ public class GraphicOverlay extends View {
             for (Graphic graphic : mGraphics) {
                 graphic.draw(canvas);
             }
-
-            FileSaver fileSaver = new FileSaver(getContext());
-            fileSaver.saveImage(this,"a.jpg");
+//            FileSaver fileSaver = new FileSaver(getContext());
+//            fileSaver.saveImage(this,"a.jpg");
         }
     }
-
 }

@@ -22,6 +22,8 @@ import android.graphics.Paint;
 import android.graphics.PointF;
 
 import com.google.android.gms.samples.vision.face.googlyeyes.disk.FileSaver;
+import com.google.android.gms.samples.vision.face.googlyeyes.otto.OttoBus;
+import com.google.android.gms.samples.vision.face.googlyeyes.otto.SmileEvent;
 import com.google.android.gms.samples.vision.face.googlyeyes.ui.camera.GraphicOverlay;
 
 /**
@@ -151,13 +153,13 @@ class GooglyEyesGraphic extends GraphicOverlay.Graphic {
 
         drawSmile(canvas);
 
-        fileSaver.saveImage(canvas,"b.jpg");
+//        fileSaver.saveImage(canvas,"b.jpg");
 
     }
 
     private void drawSmile(Canvas canvas) {
 
-        if ( mIsSmiling < 0.5 ) {
+        if ( mIsSmiling < 0.5 && mBottomMouth != null) {
             int shadow = 20;
             PointF position =
                     new PointF(translateX(mBottomMouth.x), translateY(mBottomMouth.y));
@@ -165,7 +167,10 @@ class GooglyEyesGraphic extends GraphicOverlay.Graphic {
             canvas.drawText("Smile ", position.x + shadow, position.y + shadow, mSmilePaintBlack);
             canvas.drawText("Smile ", position.x, position.y, mSmilePaintWhite);
 
+
 //            canvas.drawCircle(position.x, position.y, 100, mSmilePaintWhite);
+        } else {
+            OttoBus.post(new SmileEvent());
         }
     }
 

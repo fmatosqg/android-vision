@@ -57,10 +57,17 @@ public class FileSaver extends ContextWrapper {
 
     public void saveImage(Canvas cv, String filename) {
 
+        Bitmap bitmap = getBitmap(cv);
+
+        saveImage(bitmap,filename);
+    }
+
+
+    public void saveImage(Bitmap bitmap, String filename) {
         try {
-            Bitmap drawingCache = getBitmap(cv);
-            if (drawingCache != null) {
-                drawingCache.compress(Bitmap.CompressFormat.JPEG, 100, new FileOutputStream(getFilePath(filename)));
+
+            if (bitmap != null) {
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, new FileOutputStream(getFilePath(filename)));
             } else {
                 Log.i(TAG, "Null bitmap here");
             }
@@ -88,7 +95,7 @@ public class FileSaver extends ContextWrapper {
     }
 
 
-    private File getFilePath(String filename) {
+    public File getFilePath(String filename) {
 //        return new File("/sdcard/arun.jpg");
 
         File file = getAlbumStorageDir(getBaseContext(), "smile");
@@ -104,8 +111,9 @@ public class FileSaver extends ContextWrapper {
         File file = new File(context.getExternalFilesDir(
                 Environment.DIRECTORY_PICTURES), albumName);
         if (!file.mkdirs()) {
-            Log.e(TAG, "Directory not created");
+            Log.d(TAG, "Directory not created");
         }
         return file;
     }
+
 }
