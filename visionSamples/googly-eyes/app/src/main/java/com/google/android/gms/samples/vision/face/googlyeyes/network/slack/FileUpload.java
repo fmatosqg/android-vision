@@ -4,6 +4,9 @@ import android.util.Log;
 
 
 import com.google.android.gms.samples.vision.face.googlyeyes.BuildConfig;
+import com.google.android.gms.samples.vision.face.googlyeyes.otto.OttoBus;
+import com.google.android.gms.samples.vision.face.googlyeyes.otto.UploadFinishEvent;
+import com.google.android.gms.samples.vision.face.googlyeyes.otto.UploadStartEvent;
 
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URLEncodedUtils;
@@ -51,6 +54,8 @@ public class FileUpload {
 
     public  void postMultipart(String filename,String url) {
 
+        UploadFinishEvent uploadFinishEvent = null;
+        OttoBus.post(new UploadStartEvent());
         CloseableHttpClient httpClient = null;
 
         try {
@@ -67,10 +72,11 @@ public class FileUpload {
 
 
             httpClient.execute(postRequest);// takes time
-
+            uploadFinishEvent  = new UploadFinishEvent(true);
         } catch (Exception e) {
             Log.w("uploadToBlobStore", "postToUrl Exception e = " + e);
             e.printStackTrace();
+            uploadFinishEvent  = new UploadFinishEvent(false);
         } finally {
             if (httpClient != null) {
                 Log.w("uploadToBlobStore", "connection.closing ");
@@ -83,6 +89,8 @@ public class FileUpload {
                 }
             }
         }
+
+        OttoBus.post(uploadFinishEvent);
     }
 
 }

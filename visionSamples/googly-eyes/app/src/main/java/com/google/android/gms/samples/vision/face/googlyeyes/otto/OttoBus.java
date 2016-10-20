@@ -1,6 +1,7 @@
 package com.google.android.gms.samples.vision.face.googlyeyes.otto;
 
 import com.squareup.otto.Bus;
+import com.squareup.otto.ThreadEnforcer;
 
 /**
  * Created by fmatos on 19/10/2016.
@@ -8,7 +9,7 @@ import com.squareup.otto.Bus;
 
 public class OttoBus {
 
-    private static Bus bus = new Bus();
+    private static Bus bus = new Bus(ThreadEnforcer.ANY);
 
     public static void register(Object o) {
         bus.register(o);

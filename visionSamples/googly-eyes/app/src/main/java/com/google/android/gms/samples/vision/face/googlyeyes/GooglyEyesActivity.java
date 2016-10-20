@@ -44,6 +44,7 @@ import com.google.android.gms.samples.vision.face.googlyeyes.network.slack.FileU
 import com.google.android.gms.samples.vision.face.googlyeyes.network.slack.PostService;
 import com.google.android.gms.samples.vision.face.googlyeyes.otto.OttoBus;
 import com.google.android.gms.samples.vision.face.googlyeyes.otto.SmileEvent;
+import com.google.android.gms.samples.vision.face.googlyeyes.otto.UploadFinishEvent;
 import com.google.android.gms.vision.CameraSource;
 import com.google.android.gms.vision.Detector;
 import com.google.android.gms.vision.MultiProcessor;
@@ -62,15 +63,15 @@ import java.io.IOException;
  * Activity for Googly Eyes, an app that uses the camera to track faces and superimpose Googly Eyes
  * animated graphics over the eyes.  The app also detects whether the eyes are open or closed,
  * drawing the eyes in the correct state.<p>
- *
+ * <p>
  * This app supports both a front facing mode and a rear facing mode, which demonstrate different
  * API functionality trade-offs:<p>
- *
+ * <p>
  * Front facing mode uses the device's front facing camera to track one user, in a "selfie" fashion.
  * The settings for the face detector and its associated processing pipeline are set to optimize for
  * the single face case, where the face is relatively large.  These factors allow the face detector
  * to be faster and more responsive to quick motion.<p>
- *
+ * <p>
  * Rear facing mode uses the device's rear facing camera to track any number of faces.  The settings
  * for the face detector and its associated processing pipeline support finding multiple faces, and
  * attempt to find smaller faces in comparison to the front facing mode.  But since this requires
@@ -91,6 +92,8 @@ public final class GooglyEyesActivity extends AppCompatActivity {
 
     private boolean mIsFrontFacing = true;
 
+    private Button postButton;
+    private boolean isBusy = false;
     //==============================================================================================
     // Activity Methods
     //==============================================================================================
@@ -112,7 +115,7 @@ public final class GooglyEyesActivity extends AppCompatActivity {
         final Button flipButton = (Button) findViewById(R.id.flipButton);
         flipButton.setOnClickListener(mFlipButtonListener);
 
-        final Button postButton = (Button) findViewById(R.id.postButton);
+        postButton = (Button) findViewById(R.id.postButton);
         postButton.setOnClickListener(mPostButtonListener);
 
         if (savedInstanceState != null) {
@@ -196,7 +199,7 @@ public final class GooglyEyesActivity extends AppCompatActivity {
     /**
      * Callback for the result from requesting permissions. This method is invoked for every call on
      * {@link #requestPermissions(String[], int)}.<p>
-     *
+     * <p>
      * <strong>Note:</strong> It is possible that the permissions request interaction with the user
      * is interrupted. In this case you will receive empty permissions and results arrays which
      * should be treated as a cancellation.<p>
@@ -324,7 +327,7 @@ public final class GooglyEyesActivity extends AppCompatActivity {
             // speed up detection, in that it can quit after finding a single face and can assume
             // that the nextIrisPosition face position is usually relatively close to the last seen
             // face position.
-            Tracker<Face> tracker = new GooglyFaceTracker(mGraphicOverlay,this);
+            Tracker<Face> tracker = new GooglyFaceTracker(mGraphicOverlay, this);
             processor = new LargestFaceFocusingProcessor.Builder(detector, tracker).build();
         } else {
             // For rear facing mode, a factory is used to create per-face tracker instances.  A
@@ -341,7 +344,7 @@ public final class GooglyEyesActivity extends AppCompatActivity {
             MultiProcessor.Factory<Face> factory = new MultiProcessor.Factory<Face>() {
                 @Override
                 public Tracker<Face> create(Face face) {
-                    return new GooglyFaceTracker(mGraphicOverlay,GooglyEyesActivity.this);
+                    return new GooglyFaceTracker(mGraphicOverlay, GooglyEyesActivity.this);
                 }
             };
             processor = new MultiProcessor.Builder<>(factory).build();
@@ -406,7 +409,6 @@ public final class GooglyEyesActivity extends AppCompatActivity {
                 .build();
 
 
-
     }
 
     /**
@@ -437,27 +439,27 @@ public final class GooglyEyesActivity extends AppCompatActivity {
 
     public void takePicture() {
 
-                mCameraSource.takePicture(new CameraSource.ShutterCallback() {
-                    @Override
-                    public void onShutter() {
-                        Log.i(TAG, "***Shutter callback");
-                    }
-                }, new CameraSource.PictureCallback() {
-                    @Override
-                    public void onPictureTaken(byte[] bytes) {
-                        Log.i(TAG, "***pickure taken");
-                        String fullpath = saveImage(bytes);
-                        FileUpload fileUpload = new FileUpload();
-                        fileUpload.uploadFile(fullpath,fileUpload.uploadUrl("@fabio"));
-                    }
-                });
+        mCameraSource.takePicture(new CameraSource.ShutterCallback() {
+            @Override
+            public void onShutter() {
+                Log.i(TAG, "***Shutter callback");
+            }
+        }, new CameraSource.PictureCallback() {
+            @Override
+            public void onPictureTaken(byte[] bytes) {
+                Log.i(TAG, "***pickure taken");
+                String fullpath = saveImage(bytes);
+                FileUpload fileUpload = new FileUpload();
+                fileUpload.uploadFile(fullpath, fileUpload.uploadUrl("@fabio"));
+            }
+        });
     }
 
     private String saveImage(byte[] bytes) {
 
         Bitmap picture = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
         FileSaver fileSaver = new FileSaver(getBaseContext());
-        return fileSaver.saveImage(picture,"d.jpg");
+        return fileSaver.saveImage(picture, "d.jpg");
     }
 
     static class ImageTools {
@@ -474,12 +476,38 @@ public final class GooglyEyesActivity extends AppCompatActivity {
 
     @Subscribe
     public void onSmileEvent(SmileEvent event) {
-        Log.i(TAG,"Smile detected");
+        Log.i(TAG, "Smile detected");
+
+        if (isBusy) {
+            return;
+        }
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                postButton.setVisibility(View.GONE);
+            }
+        });
 
         try {
+
+            isBusy = true;
             takePicture();
+
         } catch (RuntimeException exception) {
-            Log.i(TAG,"AAAAArgh " + exception.toString());
+            Log.i(TAG, "AAAAArgh " + exception.toString());
         }
+    }
+
+    @Subscribe
+    public void onUploadFinish(UploadFinishEvent event) {
+
+        isBusy = false;
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                postButton.setVisibility(View.VISIBLE);
+            }
+        });
     }
 }
