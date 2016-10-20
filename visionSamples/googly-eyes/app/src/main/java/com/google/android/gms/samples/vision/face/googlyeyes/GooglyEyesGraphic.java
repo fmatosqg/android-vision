@@ -16,12 +16,14 @@
 package com.google.android.gms.samples.vision.face.googlyeyes;
 
 import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
 
-import com.google.android.gms.samples.vision.face.googlyeyes.disk.FileSaver;
 import com.google.android.gms.samples.vision.face.googlyeyes.otto.OttoBus;
 import com.google.android.gms.samples.vision.face.googlyeyes.otto.SmileEvent;
 import com.google.android.gms.samples.vision.face.googlyeyes.ui.camera.GraphicOverlay;
@@ -52,12 +54,13 @@ class GooglyEyesGraphic extends GraphicOverlay.Graphic {
     private float mIsSmiling;
     private PointF mBottomMouth;
 
-    private final FileSaver fileSaver;
+    final private Context context;
+
     //==============================================================================================
     // Methods
     //==============================================================================================
 
-    GooglyEyesGraphic(GraphicOverlay overlay,Context context) {
+    GooglyEyesGraphic(GraphicOverlay overlay, Context context) {
         super(overlay);
 
         mEyeWhitesPaint = new Paint();
@@ -93,7 +96,7 @@ class GooglyEyesGraphic extends GraphicOverlay.Graphic {
         mSmilePaintWhite.setTextAlign(Paint.Align.CENTER);
         mSmilePaintWhite.setTextSize(50 * mScaleFactor);
 
-        fileSaver = new FileSaver(context);
+        this.context = context;
     }
 
     /**
@@ -137,7 +140,7 @@ class GooglyEyesGraphic extends GraphicOverlay.Graphic {
         // Use the inter-eye distance to set the size of the eyes.
         float distance = (float) Math.sqrt(
                 Math.pow(rightPosition.x - leftPosition.x, 2) +
-                Math.pow(rightPosition.y - leftPosition.y, 2));
+                        Math.pow(rightPosition.y - leftPosition.y, 2));
         float eyeRadius = EYE_RADIUS_PROPORTION * distance;
         float irisRadius = IRIS_RADIUS_PROPORTION * distance;
 
@@ -153,25 +156,32 @@ class GooglyEyesGraphic extends GraphicOverlay.Graphic {
 
         drawSmile(canvas);
 
-//        fileSaver.saveImage(canvas,"b.jpg");
-
     }
 
     private void drawSmile(Canvas canvas) {
 
-        if ( mIsSmiling < 0.5 && mBottomMouth != null) {
-            int shadow = 20;
+        if (mBottomMouth != null) {
+
             PointF position =
                     new PointF(translateX(mBottomMouth.x), translateY(mBottomMouth.y));
 
-            canvas.drawText("Smile ", position.x + shadow, position.y + shadow, mSmilePaintBlack);
-            canvas.drawText("Smile ", position.x, position.y, mSmilePaintWhite);
+            if (mIsSmiling < 0.5) {
+                int shadow = 10;
 
+                canvas.drawText("Smile ", position.x + shadow, position.y + shadow, mSmilePaintBlack);
+                canvas.drawText("Smile ", position.x, position.y, mSmilePaintWhite);
 
-//            canvas.drawCircle(position.x, position.y, 100, mSmilePaintWhite);
-        } else {
-            OttoBus.post(new SmileEvent());
+            } else {
+                drawNyan(canvas, position);
+                OttoBus.post(new SmileEvent());
+            }
         }
+    }
+
+    private void drawNyan(Canvas canvas, PointF position) {
+
+        Bitmap bmp = BitmapFactory.decodeResource(context.getResources(), R.drawable.nyan_animated);
+        canvas.drawBitmap(bmp, position.x - bmp.getWidth() / 2, position.y - bmp.getHeight() / 2, null);
     }
 
     /**

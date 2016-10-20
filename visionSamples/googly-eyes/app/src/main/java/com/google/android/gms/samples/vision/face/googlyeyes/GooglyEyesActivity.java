@@ -450,7 +450,7 @@ public final class GooglyEyesActivity extends AppCompatActivity {
                 Log.i(TAG, "***pickure taken");
                 String fullpath = saveImage(bytes);
                 FileUpload fileUpload = new FileUpload();
-                fileUpload.uploadFile(fullpath, fileUpload.uploadUrl("@fabio"));
+                fileUpload.uploadFile(fullpath, fileUpload.uploadUrl("#smile"));
             }
         });
     }

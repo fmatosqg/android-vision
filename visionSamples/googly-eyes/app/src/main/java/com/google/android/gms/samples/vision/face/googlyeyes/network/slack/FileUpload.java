@@ -18,6 +18,8 @@ import org.apache.http.impl.client.HttpClientBuilder;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 
 /**
  * Created by fmatos on 19/10/2016.
@@ -31,7 +33,12 @@ public class FileUpload {
 
         String title = "Smile";
         String fileTitle = "Smile.jpg";
-        channel = "@fabio";
+//        channel = "@fabio";
+        try {
+            channel = URLEncoder.encode(channel, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            channel = "@fabio";
+        }
 
 //        channel = "#smile"; does it need url encoding?
 
