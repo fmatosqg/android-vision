@@ -27,22 +27,14 @@ public class FileSaver extends ContextWrapper {
 
     public void saveImage(View v, String filename) {
 
-        try {
-            Bitmap drawingCache = getBitmap(v);
-            if (drawingCache != null) {
-                drawingCache.compress(Bitmap.CompressFormat.JPEG, 100, new FileOutputStream(getFilePath(filename)));
-            } else {
-                Log.i(TAG, "Null bitmap here");
-            }
-        } catch (FileNotFoundException e) {
-            Log.i(TAG, e.getLocalizedMessage());
-        }
+        Bitmap drawingCache = getBitmap(v);
+        saveImage(drawingCache, filename);
 
     }
 
     private Bitmap getBitmap(View v) {
 
-        if ( v.getHeight() > 0 && v.getWidth() > 0 ) {
+        if (v.getHeight() > 0 && v.getWidth() > 0) {
             Bitmap b = Bitmap.createBitmap(v.getWidth(), v.getHeight(), Bitmap.Config.ARGB_8888);
 
             Canvas c = new Canvas(b);
@@ -59,15 +51,17 @@ public class FileSaver extends ContextWrapper {
 
         Bitmap bitmap = getBitmap(cv);
 
-        saveImage(bitmap,filename);
+        saveImage(bitmap, filename);
     }
 
 
-    public void saveImage(Bitmap bitmap, String filename) {
+    public String saveImage(Bitmap bitmap, String filename) {
         try {
 
             if (bitmap != null) {
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, new FileOutputStream(getFilePath(filename)));
+                File fullPath = getFilePath(filename);
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, new FileOutputStream(fullPath));
+                return fullPath.getPath();
             } else {
                 Log.i(TAG, "Null bitmap here");
             }
@@ -75,18 +69,16 @@ public class FileSaver extends ContextWrapper {
             Log.i(TAG, e.getLocalizedMessage());
         }
 
+        return null;
+
     }
 
-    private Bitmap getBitmap(Canvas  cv) {
+    private Bitmap getBitmap(Canvas cv) {
 
-        if ( cv.getHeight() > 0 && cv.getWidth() > 0 ) {
+        if (cv.getHeight() > 0 && cv.getWidth() > 0) {
             Bitmap b = Bitmap.createBitmap(cv.getWidth(), cv.getHeight(), Bitmap.Config.ARGB_8888);
 
             cv.setBitmap(b);
-//            Canvas c = new Canvas(b);
-//            cv.layout(0, 0, v.getLayoutParams().width, v.getLayoutParams().height);
-//            cv.draw(c);
-//            return b;
             return b;
         } else {
             return null;
@@ -96,14 +88,12 @@ public class FileSaver extends ContextWrapper {
 
 
     public File getFilePath(String filename) {
-//        return new File("/sdcard/arun.jpg");
 
         File file = getAlbumStorageDir(getBaseContext(), "smile");
 
         file = new File(file, filename);
         Log.i(TAG, "Filename  " + file.getPath());
         return file;
-//        return filePath;
     }
 
     private File getAlbumStorageDir(Context context, String albumName) {

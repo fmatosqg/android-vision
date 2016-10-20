@@ -1,4 +1,5 @@
 // copy this file over to slack.properties and update it with the proper slack web hook address
 ext {
     SLACK_WEB_HOOK='https://hooks.slack.com/services/000000/00000/00000'
+    SLACK_TOKEN='xxxxxxxx-xxxxxx-xxxxxx'
 }

@@ -1,4 +1,4 @@
-package com.google.android.gms.samples.vision.face.googlyeyes.network;
+package com.google.android.gms.samples.vision.face.googlyeyes.network.slack;
 
 import android.util.Log;
 
@@ -67,7 +67,7 @@ public class PostService {
         postPhotoVolley("volley rules");
     }
 
-
+/*
     private void postPhotoHttpClient(final String text) {
 
         Thread thread = new Thread(new Runnable() {
@@ -112,7 +112,7 @@ public class PostService {
         return null;
     }
 
-
+*/
     public void postPhotoVolley(String text) {
         Map<String, String> params = new HashMap();
         params.put("text", text);
@@ -138,7 +138,7 @@ public class PostService {
 
         mRequestQueue.add(jsonRequest);
     }
-
+/*
     public void getPhoto() {
 
         // Request a string response from the provided URL.
@@ -158,4 +158,5 @@ public class PostService {
 // Add the request to the RequestQueue.
         mRequestQueue.add(stringRequest);
     }
+    */
 }

@@ -27,10 +27,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
-import android.media.ExifInterface;
 import android.os.Bundle;
-import android.os.Handler;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -43,7 +40,8 @@ import android.widget.Toast;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.samples.vision.face.googlyeyes.disk.FileSaver;
-import com.google.android.gms.samples.vision.face.googlyeyes.network.PostService;
+import com.google.android.gms.samples.vision.face.googlyeyes.network.slack.FileUpload;
+import com.google.android.gms.samples.vision.face.googlyeyes.network.slack.PostService;
 import com.google.android.gms.samples.vision.face.googlyeyes.otto.OttoBus;
 import com.google.android.gms.samples.vision.face.googlyeyes.otto.SmileEvent;
 import com.google.android.gms.vision.CameraSource;
@@ -57,7 +55,6 @@ import com.google.android.gms.samples.vision.face.googlyeyes.ui.camera.GraphicOv
 import com.google.android.gms.vision.face.LargestFaceFocusingProcessor;
 import com.squareup.otto.Subscribe;
 
-import java.io.File;
 import java.io.IOException;
 
 
@@ -430,7 +427,6 @@ public final class GooglyEyesActivity extends AppCompatActivity {
         if (mCameraSource != null) {
             try {
                 mPreview.start(mCameraSource, mGraphicOverlay);
-//                takePicture();
             } catch (IOException e) {
                 Log.e(TAG, "Unable to start camera source.", e);
                 mCameraSource.release();
@@ -450,16 +446,18 @@ public final class GooglyEyesActivity extends AppCompatActivity {
                     @Override
                     public void onPictureTaken(byte[] bytes) {
                         Log.i(TAG, "***pickure taken");
-                        saveImage(bytes);
+                        String fullpath = saveImage(bytes);
+                        FileUpload fileUpload = new FileUpload();
+                        fileUpload.uploadFile(fullpath,fileUpload.uploadUrl("@fabio"));
                     }
                 });
     }
 
-    private void saveImage(byte[] bytes) {
+    private String saveImage(byte[] bytes) {
 
         Bitmap picture = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
         FileSaver fileSaver = new FileSaver(getBaseContext());
-        fileSaver.saveImage(picture,"d.jpg");
+        return fileSaver.saveImage(picture,"d.jpg");
     }
 
     static class ImageTools {
@@ -475,7 +473,7 @@ public final class GooglyEyesActivity extends AppCompatActivity {
     }
 
     @Subscribe
-    public void onSmileEvent(SmileEvent e) {
+    public void onSmileEvent(SmileEvent event) {
         Log.i(TAG,"Smile detected");
 
         try {
