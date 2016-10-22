@@ -53,7 +53,6 @@ class GooglyEyesGraphic extends GraphicOverlay.Graphic {
     private float mIsSmiling;
     private PointF mBottomMouth;
 
-    private final FileSaver fileSaver;
     //==============================================================================================
     // Methods
     //==============================================================================================
@@ -94,7 +93,6 @@ class GooglyEyesGraphic extends GraphicOverlay.Graphic {
         mSmilePaintWhite.setTextAlign(Paint.Align.CENTER);
         mSmilePaintWhite.setTextSize(50 * mScaleFactor);
 
-        fileSaver = new FileSaver(context);
     }
 
     /**
@@ -124,6 +122,14 @@ class GooglyEyesGraphic extends GraphicOverlay.Graphic {
      */
     @Override
     public void draw(Canvas canvas) {
+
+        drawFeatures(canvas);
+        if ( mIsSmiling >  SMILE_THRESHOLD) {
+            OttoBus.post(new SmileEvent());
+        }
+    }
+
+    public void drawFeatures(Canvas canvas) {
         PointF detectLeftPosition = mLeftPosition;
         PointF detectRightPosition = mRightPosition;
         if ((detectLeftPosition == null) || (detectRightPosition == null)) {
@@ -153,10 +159,6 @@ class GooglyEyesGraphic extends GraphicOverlay.Graphic {
         drawEye(canvas, rightPosition, eyeRadius, rightIrisPosition, irisRadius, mRightOpen);
 
         drawSmile(canvas);
-
-        if ( mIsSmiling >  SMILE_THRESHOLD) {
-            OttoBus.post(new SmileEvent());
-        }
 
     }
 

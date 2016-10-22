@@ -472,7 +472,6 @@ public final class GooglyEyesActivity extends AppCompatActivity {
 
         Bitmap picture = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
 
-
         Bitmap resizedBitmap = Bitmap.createBitmap(mGraphicOverlay.getWidth(),mGraphicOverlay.getHeight(),picture.getConfig());
 
         Canvas canvas = new Canvas(resizedBitmap);
@@ -488,8 +487,7 @@ public final class GooglyEyesActivity extends AppCompatActivity {
         Paint paint = new Paint();
         canvas.drawBitmap(picture,matrix,paint);
 
-
-        tracker.getmEyesGraphic().drawSmile(canvas);
+        tracker.getmEyesGraphic().drawFeatures(canvas);
 
         FileSaver fileSaver = new FileSaver(getBaseContext());
         return fileSaver.saveImage(resizedBitmap, "d.jpg");
