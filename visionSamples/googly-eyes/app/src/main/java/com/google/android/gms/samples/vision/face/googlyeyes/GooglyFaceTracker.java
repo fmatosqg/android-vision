@@ -42,6 +42,7 @@ class GooglyFaceTracker extends Tracker<Face> {
     private final Context context;
 
     private GraphicOverlay mOverlay;
+
     private GooglyEyesGraphic mEyesGraphic;
 
     // Record the previously seen proportions of the landmark locations relative to the bounding box
@@ -62,6 +63,10 @@ class GooglyFaceTracker extends Tracker<Face> {
     GooglyFaceTracker(GraphicOverlay overlay, Context context) {
         mOverlay = overlay;
         this.context = context;
+    }
+
+    public GooglyEyesGraphic getmEyesGraphic() {
+        return mEyesGraphic;
     }
 
     /**

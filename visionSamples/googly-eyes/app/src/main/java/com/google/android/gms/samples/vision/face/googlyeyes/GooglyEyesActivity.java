@@ -26,8 +26,11 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -94,6 +97,7 @@ public final class GooglyEyesActivity extends AppCompatActivity {
 
     private Button postButton;
     private boolean isBusy = false;
+    private GooglyFaceTracker tracker;
     //==============================================================================================
     // Activity Methods
     //==============================================================================================
@@ -327,7 +331,7 @@ public final class GooglyEyesActivity extends AppCompatActivity {
             // speed up detection, in that it can quit after finding a single face and can assume
             // that the nextIrisPosition face position is usually relatively close to the last seen
             // face position.
-            Tracker<Face> tracker = new GooglyFaceTracker(mGraphicOverlay, this);
+            tracker = new GooglyFaceTracker(mGraphicOverlay, this);
             processor = new LargestFaceFocusingProcessor.Builder(detector, tracker).build();
         } else {
             // For rear facing mode, a factory is used to create per-face tracker instances.  A
@@ -450,7 +454,16 @@ public final class GooglyEyesActivity extends AppCompatActivity {
                 Log.i(TAG, "***pickure taken");
                 String fullpath = saveImage(bytes);
                 FileUpload fileUpload = new FileUpload();
-                fileUpload.uploadFile(fullpath, fileUpload.uploadUrl("@fabio"));
+
+                isBusy = true;
+                Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        isBusy = false;
+                    }
+                },7000);
+//                fileUpload.uploadFile(fullpath, fileUpload.uploadUrl("@fabio"));
             }
         });
     }
@@ -458,8 +471,28 @@ public final class GooglyEyesActivity extends AppCompatActivity {
     private String saveImage(byte[] bytes) {
 
         Bitmap picture = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+
+
+        Bitmap resizedBitmap = Bitmap.createBitmap(mGraphicOverlay.getWidth(),mGraphicOverlay.getHeight(),picture.getConfig());
+
+        Canvas canvas = new Canvas(resizedBitmap);
+        Matrix matrix = new Matrix();
+
+        // works for portrait, but off for landscape
+        matrix.setScale((float)resizedBitmap.getWidth()/(float)picture.getWidth(),(float)resizedBitmap.getHeight()/(float)picture.getHeight());
+
+        // mirror by inverting scale and translating
+        matrix.preScale(-1, 1);
+        matrix.postTranslate(canvas.getWidth(), 0);
+
+        Paint paint = new Paint();
+        canvas.drawBitmap(picture,matrix,paint);
+
+
+        tracker.getmEyesGraphic().drawSmile(canvas);
+
         FileSaver fileSaver = new FileSaver(getBaseContext());
-        return fileSaver.saveImage(picture, "d.jpg");
+        return fileSaver.saveImage(resizedBitmap, "d.jpg");
     }
 
     static class ImageTools {
@@ -490,7 +523,6 @@ public final class GooglyEyesActivity extends AppCompatActivity {
 
         try {
 
-            isBusy = true;
             takePicture();
 
         } catch (RuntimeException exception) {

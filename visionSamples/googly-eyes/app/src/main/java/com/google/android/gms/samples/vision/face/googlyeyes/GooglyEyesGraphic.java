@@ -31,7 +31,8 @@ import com.google.android.gms.samples.vision.face.googlyeyes.ui.camera.GraphicOv
  */
 class GooglyEyesGraphic extends GraphicOverlay.Graphic {
     private static final float EYE_RADIUS_PROPORTION = 0.45f;
-    private static final float IRIS_RADIUS_PROPORTION = EYE_RADIUS_PROPORTION / 2.0f;
+    private static final float IRIS_RADIUS_PROPORTION = EYE_RADIUS_PROPORTION / 3.0f;
+    private static final float SMILE_THRESHOLD = 0.5f;
 
     private Paint mEyeWhitesPaint;
     private Paint mEyeIrisPaint;
@@ -153,24 +154,29 @@ class GooglyEyesGraphic extends GraphicOverlay.Graphic {
 
         drawSmile(canvas);
 
-//        fileSaver.saveImage(canvas,"b.jpg");
+        if ( mIsSmiling >  SMILE_THRESHOLD) {
+            OttoBus.post(new SmileEvent());
+        }
 
     }
 
-    private void drawSmile(Canvas canvas) {
+    public void drawSmile(Canvas canvas) {
 
-        if ( mIsSmiling < 0.5 && mBottomMouth != null) {
-            int shadow = 20;
+        if (mBottomMouth != null ) {
             PointF position =
                     new PointF(translateX(mBottomMouth.x), translateY(mBottomMouth.y));
 
-            canvas.drawText("Smile ", position.x + shadow, position.y + shadow, mSmilePaintBlack);
-            canvas.drawText("Smile ", position.x, position.y, mSmilePaintWhite);
+            if (mIsSmiling < SMILE_THRESHOLD) {
+                int shadow = 20;
+
+                canvas.drawText("Smile ", position.x + shadow, position.y + shadow, mSmilePaintBlack);
+                canvas.drawText("Smile ", position.x, position.y, mSmilePaintWhite);
 
 
 //            canvas.drawCircle(position.x, position.y, 100, mSmilePaintWhite);
-        } else {
-            OttoBus.post(new SmileEvent());
+            } else {
+                canvas.drawText("Smilee oo ", position.x, position.y, mSmilePaintWhite);
+            }
         }
     }
 
